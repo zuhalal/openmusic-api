@@ -8,7 +8,7 @@ class AlbumsHandler {
     this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
   }
 
-  async postAlbumHandler(request) {
+  async postAlbumHandler(request, h) {
     const { name, year } = request.payload;
 
     const albumId = await this._service.addAlbum({ name, year });
@@ -26,11 +26,11 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request, h) {
     const { id } = request.params;
-    const note = await this._service.getAlbumById(id);
+    const album = await this._service.getAlbumById(id);
     return {
       status: 'success',
       data: {
-        note,
+        album,
       },
     };
   }

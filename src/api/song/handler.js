@@ -9,7 +9,7 @@ class SongsHandler {
     this.deleteSongByIdHandler = this.deleteSongByIdHandler.bind(this);
   }
 
-  async postSongHandler(request) {
+  async postSongHandler(request, h) {
     const {  title, year, genre, performer, duration, album_id  } = request.payload;
 
     const songId = await this._service.addSong({  title, year, genre, performer, duration, album_id  });
