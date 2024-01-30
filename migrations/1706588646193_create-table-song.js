@@ -34,14 +34,6 @@ exports.up = pgm => {
       references: '"album"',
       onDelete: 'cascade',
     },
-    created_at: {
-      type: 'TEXT',
-      notNull: true,
-    },
-    updated_at: {
-      type: 'TEXT',
-      notNull: true,
-    },
   });
   pgm.createIndex('song', 'album_id');
 };
