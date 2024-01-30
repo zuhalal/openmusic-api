@@ -8,14 +8,14 @@ class SongService {
     this._pool = new Pool();
   }
 
-  async addSong({ title, year, genre, performer, duration, album_id }) {
+  async addSong({ title, year, genre, performer, duration, albumId }) {
     const id = `song-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
 
     const query = {
       text: 'INSERT INTO song VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id',
-      values: [id, title, year, genre, performer, duration, album_id, createdAt, updatedAt],
+      values: [id, title, year, genre, performer, duration, albumId, createdAt, updatedAt],
     };
 
     const result = await this._pool.query(query);
@@ -41,16 +41,34 @@ class SongService {
     return result.rows[0];
   }
 
-  async getSongs() {
-    const result = await this._pool.query('SELECT * FROM song');
+  async getSongs(title, performer) {
+    let query = 'SELECT * FROM song';
+    const params = [];
+    let conditions = [];
+  
+    if (title) {
+      params.push(`%${title}%`); 
+      conditions.push(`title ILIKE $${params.length}`);
+    }
+  
+    if (performer) {
+      params.push(`%${performer}%`);
+      conditions.push(`performer ILIKE $${params.length}`);
+    }
+  
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+  
+    const result = await this._pool.query(query, params);
     return result.rows;
   }
 
-  async editSongById(id, { title, year, genre, performer, duration, album_id }) {
+  async editSongById(id, { title, year, genre, performer, duration, albumId }) {
     const updatedAt = new Date().toISOString();
     const query = {
       text: 'UPDATE song SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6, updated_at = $7 WHERE id = $8 RETURNING id',
-      values: [title, year, genre, performer, duration, album_id, updatedAt, id],
+      values: [title, year, genre, performer, duration, albumId, updatedAt, id],
     };
 
     const result = await this._pool.query(query);
