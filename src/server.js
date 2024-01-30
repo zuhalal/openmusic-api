@@ -7,6 +7,9 @@ const ClientError = require('./exceptions/ClientError');
 const AlbumService = require('./services/postgres/AlbumService');
 const SongService = require('./services/postgres/SongService');
 
+const AlbumsValidator = require('./validator/album');
+const SongsValidator = require('./validator/song');
+
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
@@ -24,7 +27,6 @@ const init = async () => {
   server.ext('onPreResponse', (request, h) => {
     // mendapatkan konteks response dari request
     const { response } = request;
-  
     // penanganan client error secara internal.
     if (response instanceof ClientError) {
       const newResponse = h.response({
@@ -43,12 +45,14 @@ const init = async () => {
       plugin: album,
       options: {
         service: albumService,
+        validator: AlbumsValidator
       },
     },
     {
       plugin: song,
       options: {
         service: songService,
+        validator: SongsValidator
       },
     }
   ]);
