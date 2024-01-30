@@ -25,7 +25,7 @@ exports.up = pgm => {
       notNull: true,
     },
     duration: {
-      type: 'BIGINT',
+      type: 'INTEGER',
       notNull: false,
     },
     album_id: {
