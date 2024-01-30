@@ -36,7 +36,7 @@ const init = async () => {
       newResponse.code(response.statusCode);
       return newResponse;
     }
-      
+
     return h.continue;
   });
 
@@ -45,16 +45,16 @@ const init = async () => {
       plugin: album,
       options: {
         service: albumService,
-        validator: AlbumsValidator
+        validator: AlbumsValidator,
       },
     },
     {
       plugin: song,
       options: {
         service: songService,
-        validator: SongsValidator
+        validator: SongsValidator,
       },
-    }
+    },
   ]);
 
   await server.start();

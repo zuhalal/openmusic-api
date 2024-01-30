@@ -8,7 +8,7 @@ class AlbumService {
     this._pool = new Pool();
   }
 
-  async addAlbum({ name,  year }) {
+  async addAlbum({ name, year }) {
     const id = `album-${nanoid(16)}`;
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
@@ -23,7 +23,7 @@ class AlbumService {
     if (!result.rows[0].id) {
       throw new InvariantError('Album gagal ditambahkan');
     }
- 
+
     return result.rows[0].id;
   }
 
@@ -33,7 +33,7 @@ class AlbumService {
       values: [id],
     };
     const result = await this._pool.query(query);
- 
+
     if (!result.rows.length) {
       throw new NotFoundError('Album tidak ditemukan');
     }
@@ -45,9 +45,9 @@ class AlbumService {
     const allSong = await this._pool.query(querySong);
 
     const finalRes = {
-      ... result.rows[0],
-      songs: allSong.rows.length ? allSong.rows : []
-    }
+      ...result.rows[0],
+      songs: allSong.rows.length ? allSong.rows : [],
+    };
 
     return finalRes;
   }
