@@ -16,12 +16,10 @@ class AuthenticationHandler {
     const { username, password } = request.payload;
 
     const id = await this._usersService.verifyUserCredential(username, password);
-    console.log(id)
     const accessToken = this._tokenManager.generateAccessToken({ id });
     const refreshToken = this._tokenManager.generateRefreshToken({ id });
-    console.log("ppps")
     await this._authenticationsService.addRefreshToken(refreshToken);
-    console.log("dsad")
+
     const response = h.response({
       status: 'success',
       message: 'Authentication berhasil ditambahkan',

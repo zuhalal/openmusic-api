@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+const Jwt = require('@hapi/jwt');
 const Hapi = require('@hapi/hapi');
 const album = require('./api/album');
 const song = require('./api/song');
@@ -17,17 +17,23 @@ const SongsValidator = require('./validator/song');
 const UserService = require('./services/postgres/UserService');
 const UserValidator = require('./validator/user');
 
+// users
+const PlaylistService = require('./services/postgres/PlaylistService');
+const PlaylistValidator = require('./validator/playlist');
+
 // authentications
 const authentications = require('./api/authentication');
 const AuthenticationService = require('./services/postgres/AuthenticationService');
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentication');
+const playlist = require('./api/playlist');
 
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
   const usersService = new UserService();
   const authenticationsService = new AuthenticationService();
+  const playlistService = new PlaylistService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -55,6 +61,30 @@ const init = async () => {
     return h.continue;
   });
 
+  // registrasi plugin eksternal
+  await server.register([
+    {
+      plugin: Jwt,
+    },
+  ]);
+
+  // mendefinisikan strategy autentikasi jwt
+  server.auth.strategy('openmusic_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+    },
+    validate: (artifacts) => ({
+      isValid: true,
+      credentials: {
+        id: artifacts.decoded.payload.id,
+      },
+    }),
+  });
+
   await server.register([
     {
       plugin: album,
@@ -75,6 +105,13 @@ const init = async () => {
       options: {
         service: usersService,
         validator: UserValidator,
+      },
+    },
+    {
+      plugin: playlist,
+      options: {
+        service: playlistService,
+        validator: PlaylistValidator,
       },
     },
     {
