@@ -6,8 +6,9 @@ const NotFoundError = require('../../exceptions/NotFoundError');
 const AuthorizationError = require('../../exceptions/AuthorizationError');
 
 class PlaylistService {
-  constructor() {
+  constructor(songService) {
     this._pool = new Pool();
+    this._songService = songService;
   }
 
   async addPlaylist({ name, owner }) {
@@ -29,6 +30,13 @@ class PlaylistService {
 
   async addPlaylistToSong({ playlist_id, song_id }) {
     const id = `playlist_song-${nanoid(16)}`;
+    
+    // periksa song nya dulu ada apa engga
+    const song = await this._songService.getSongById(song_id);
+
+    if (!song.rows[0].id) {
+      throw new InvariantError('Lagu tidak ditemukan');
+    }
 
     const query = {
       text: 'INSERT INTO playlist_song VALUES($1, $2, $3) RETURNING id',
