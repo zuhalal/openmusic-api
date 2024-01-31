@@ -7,6 +7,7 @@ class PlaylistsHandler {
     this.deletePlaylistByIdHandler = this.deletePlaylistByIdHandler.bind(this);
     this.getPlaylistsSongHandler = this.getPlaylistsSongHandler.bind(this);
     this.postPlaylistSongHandler = this.postPlaylistSongHandler.bind(this);
+    this.deleteSongInPlaylistByIdHandler = this.deleteSongInPlaylistByIdHandler.bind(this);
   }
 
   async postPlaylistHandler(request, h) {
@@ -33,8 +34,9 @@ class PlaylistsHandler {
 
     const { songId } = request.payload;
     const { id } = request.params;
+    const { id: owner } = request.auth.credentials;
 
-    const playlistId = await this._service.addPlaylistToSong({ playlist_id: id, song_id: songId });
+    const playlistId = await this._service.addPlaylistToSong({ playlist_id: id, song_id: songId, owner });
 
     const response = h.response({
       status: 'success',
@@ -74,7 +76,7 @@ class PlaylistsHandler {
 
   async deleteSongInPlaylistByIdHandler(request) {
     const { id: playlistId } = request.params;
-    const { songId } = request.payload;
+    const { songId } = request.payload || {};
 
     await this._service.deleteSongInPlaylistById({ playlistId, songId });
     return {
