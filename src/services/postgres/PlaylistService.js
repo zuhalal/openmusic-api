@@ -38,11 +38,7 @@ class PlaylistService {
       throw new InvariantError('Lagu tidak ditemukan');
     }
 
-    const resultPlaylist = await this.getPlaylistById({id: playlist_id});
-
-    if (resultPlaylist?.owner != owner) {
-      throw new AuthorizationError('Anda tidak memiliki akses');
-    }
+    await this.verifyPlaylistOwner(playlist_id, owner);
 
     const query = {
       text: 'INSERT INTO playlist_song VALUES($1, $2, $3) RETURNING id',
@@ -70,7 +66,7 @@ class PlaylistService {
 
   async getPlaylistById({ id }) {
     const query = {
-      text: 'SELECT p.id, p.name, u.username, p.owner FROM playlist p, public.user u WHERE p.id = $1 AND u.id=p.owner',
+      text: 'SELECT p.id, p.name, u.username FROM playlist p, public.user u WHERE p.id = $1 AND u.id=p.owner',
       values: [id],
     };
 
@@ -99,11 +95,9 @@ class PlaylistService {
   }
   
   async getSongByPlaylistId({id, owner}) {
-    let result = await this.getPlaylistById({id});
+    await this.verifyPlaylistOwner(id, owner);
 
-    if (result?.owner != owner) {
-      throw new AuthorizationError('Anda tidak memiliki akses');
-    }
+    let result = await this.getPlaylistById({id});
 
     result = {
       id: result.id,
@@ -131,11 +125,7 @@ class PlaylistService {
       throw new InvariantError('Lagu tidak ditemukan');
     }
 
-    const resultPlaylist = await this.getPlaylistById({id: playlistId});
-
-    if (resultPlaylist?.owner != owner) {
-      throw new AuthorizationError('Anda tidak memiliki akses');
-    }
+    await this.verifyPlaylistOwner(playlistId, owner);
 
     const query = {
       text: 'DELETE FROM playlist_song WHERE song_id = $1 AND playlist_id = $2 RETURNING id',
@@ -150,11 +140,7 @@ class PlaylistService {
   }
 
   async deletePlaylistById({ id, owner }) {
-    const resultPlaylist = await this.getPlaylistById({id});
-
-    if (resultPlaylist?.owner != owner) {
-      throw new AuthorizationError('Anda tidak memiliki akses');
-    }
+    await this.verifyPlaylistOwner(id, owner);
 
     const query = {
       text: 'DELETE FROM playlist WHERE id = $1 RETURNING id',
@@ -176,7 +162,7 @@ class PlaylistService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Resource yang Anda minta tidak ditemukan');
     }
 
