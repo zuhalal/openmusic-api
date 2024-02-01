@@ -28,21 +28,21 @@ class PlaylistService {
     return result.rows[0].id;
   }
 
-  async addPlaylistToSong({ playlist_id, song_id, owner }) {
+  async addPlaylistToSong({ playlistId, songId, owner }) {
     const id = `playlist_song-${nanoid(16)}`;
-    
+
     // periksa song nya dulu ada apa engga
-    const song = await this._songService.getSongById(song_id);
+    const song = await this._songService.getSongById(songId);
 
     if (!song?.id) {
       throw new InvariantError('Lagu tidak ditemukan');
     }
 
-    await this.verifyPlaylistOwner(playlist_id, owner);
+    await this.verifyPlaylistOwner(playlistId, owner);
 
     const query = {
       text: 'INSERT INTO playlist_song VALUES($1, $2, $3) RETURNING id',
-      values: [id, playlist_id, song_id],
+      values: [id, playlistId, songId],
     };
 
     const result = await this._pool.query(query);
@@ -55,9 +55,9 @@ class PlaylistService {
   }
 
   async getPlaylists({ owner }) {
-    let query = {
+    const query = {
       text: 'select p.id, p.name, u.username from playlist p, public.user u WHERE u.id=p.owner AND owner = $1',
-      values: [owner]
+      values: [owner],
     };
 
     const result = await this._pool.query(query);
@@ -93,28 +93,28 @@ class PlaylistService {
 
     return result.rows[0];
   }
-  
-  async getSongByPlaylistId({id, owner}) {
+
+  async getSongByPlaylistId({ id, owner }) {
     await this.verifyPlaylistOwner(id, owner);
 
-    let result = await this.getPlaylistById({id});
+    let result = await this.getPlaylistById({ id });
 
     result = {
       id: result.id,
       name: result.name,
       username: result.username,
-    }
+    };
 
     const querySong = {
       text: 'SELECT s.id, s.title, s.performer from playlist_song ps, song s WHERE s.id=ps.song_id AND ps.playlist_id=$1',
       values: [id],
-    }
+    };
 
     const resultSongInPlaylist = await this._pool.query(querySong);
 
     return {
       ...result,
-      songs: resultSongInPlaylist.rows
+      songs: resultSongInPlaylist.rows,
     };
   }
 

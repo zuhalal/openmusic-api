@@ -11,6 +11,6 @@
   },
   "rules": {
     "no-console": "off",
-    "no-underscore-dangle":  ["error", { "allow": ["_pool", "_service", "_validator"] }]
+    "no-underscore-dangle":  ["error", { "allow": ["_pool", "_service", "_validator", "_authenticationsService", "_usersService", "_tokenManager", "_songService"] }]
   }
 }
