@@ -38,10 +38,10 @@ class PlaylistService {
       throw new InvariantError('Lagu tidak ditemukan');
     }
 
-    const resultPlaylist = await this.getPlaylistById({id: playlist_id, owner});
+    const resultPlaylist = await this.getPlaylistById({id: playlist_id});
 
     if (resultPlaylist?.owner != owner) {
-      throw new AuthorizationError('Playlist tidak ditemukan');
+      throw new AuthorizationError('Anda tidak memiliki akses');
     }
 
     const query = {
@@ -70,7 +70,7 @@ class PlaylistService {
 
   async getPlaylistById({ id }) {
     const query = {
-      text: 'SELECT * FROM playlist WHERE id = $1',
+      text: 'SELECT p.id, p.name, u.username, p.owner FROM playlist p, public.user u WHERE p.id = $1 AND u.id=p.owner',
       values: [id],
     };
 
@@ -99,7 +99,17 @@ class PlaylistService {
   }
   
   async getSongByPlaylistId({id, owner}) {
-    const result = await this.getPlaylistByIdAndOwner({id, owner});
+    let result = await this.getPlaylistById({id});
+
+    if (result?.owner != owner) {
+      throw new AuthorizationError('Anda tidak memiliki akses');
+    }
+
+    result = {
+      id: result.id,
+      name: result.name,
+      username: result.username,
+    }
 
     const querySong = {
       text: 'SELECT s.id, s.title, s.performer from playlist_song ps, song s WHERE s.id=ps.song_id AND ps.playlist_id=$1',
@@ -114,7 +124,19 @@ class PlaylistService {
     };
   }
 
-  async deleteSongInPlaylistById({ playlistId, songId }) {
+  async deleteSongInPlaylistById({ playlistId, songId, owner }) {
+    const song = await this._songService.getSongById(songId);
+
+    if (!song?.id) {
+      throw new InvariantError('Lagu tidak ditemukan');
+    }
+
+    const resultPlaylist = await this.getPlaylistById({id: playlistId});
+
+    if (resultPlaylist?.owner != owner) {
+      throw new AuthorizationError('Anda tidak memiliki akses');
+    }
+
     const query = {
       text: 'DELETE FROM playlist_song WHERE song_id = $1 AND playlist_id = $2 RETURNING id',
       values: [songId, playlistId],
@@ -127,7 +149,13 @@ class PlaylistService {
     }
   }
 
-  async deletePlaylistById(id) {
+  async deletePlaylistById({ id, owner }) {
+    const resultPlaylist = await this.getPlaylistById({id});
+
+    if (resultPlaylist?.owner != owner) {
+      throw new AuthorizationError('Anda tidak memiliki akses');
+    }
+
     const query = {
       text: 'DELETE FROM playlist WHERE id = $1 RETURNING id',
       values: [id],
