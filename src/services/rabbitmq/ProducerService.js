@@ -5,7 +5,7 @@ class ProducerService {
     this._playlistService = playlistService;
   }
 
-  async sendMessage (queue, message) {
+  async sendMessage(queue, message) {
     const payload = JSON.parse(message);
     await this._playlistService.verifyPlaylistOwner(payload?.playlistId, payload?.userId);
 
@@ -21,6 +21,6 @@ class ProducerService {
       connection.close();
     }, 1000);
   }
-};
+}
 
 module.exports = ProducerService;

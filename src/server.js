@@ -33,7 +33,6 @@ const _exports = require('./api/export');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
-
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
