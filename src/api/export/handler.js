@@ -3,10 +3,10 @@ class ExportsHandler {
     this._service = service;
     this._validator = validator;
 
-    this.postExportNotesHandler = this.postExportNotesHandler.bind(this);
+    this.postExportPlaylistsHandler = this.postExportPlaylistsHandler.bind(this);
   }
 
-  async postExportNotesHandler(request, h) {
+  async postExportPlaylistsHandler(request, h) {
     const { id } = request.params;
     this._validator.validateExportNotesPayload(request.payload);
 
@@ -20,7 +20,7 @@ class ExportsHandler {
 
     const response = h.response({
       status: 'success',
-      message: 'Permintaan Anda dalam antrean',
+      message: 'Permintaan Anda sedang kami proses',
     });
     response.code(201);
     return response;
