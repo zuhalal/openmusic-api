@@ -28,12 +28,19 @@ const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentication');
 const playlist = require('./api/playlist');
 
+// Exports
+const _exports = require('./api/export');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
+
+
 const init = async () => {
   const albumService = new AlbumService();
   const songService = new SongService();
   const usersService = new UserService();
   const authenticationsService = new AuthenticationService();
   const playlistService = new PlaylistService(songService);
+  const producerService = new ProducerService(playlistService);
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -121,6 +128,13 @@ const init = async () => {
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
+      },
+    },
+    {
+      plugin: _exports,
+      options: {
+        service: producerService,
+        validator: ExportsValidator,
       },
     },
   ]);
