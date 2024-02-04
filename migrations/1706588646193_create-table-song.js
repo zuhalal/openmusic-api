@@ -39,5 +39,7 @@ exports.up = pgm => {
 };
 
 exports.down = pgm => {
+  pgm.dropIndex('song', 'album_id');
+
   pgm.dropTable('song');
 };

@@ -27,5 +27,8 @@ exports.up = (pgm) => {
 };
 
 exports.down = (pgm) => {
+  pgm.dropIndex('playlist_song', 'playlist_id');
+  pgm.dropIndex('playlist_song', 'song_id');
+
   pgm.dropTable('playlist_song');
 };
