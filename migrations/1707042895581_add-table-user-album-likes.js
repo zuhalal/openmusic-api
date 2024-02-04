@@ -3,29 +3,29 @@
 exports.shorthands = undefined;
 
 exports.up = (pgm) => {
-  pgm.createTable('playlist_song', {
+  pgm.createTable('user_album_like', {
     id: {
       type: 'VARCHAR(50)',
       primaryKey: true,
     },
-    playlist_id: {
+    album_id: {
       type: 'VARCHAR(50)',
       notNull: true,
-      references: '"playlist"',
+      references: '"album"',
       onDelete: 'cascade',
     },
-    song_id: {
+    user_id: {
       type: 'VARCHAR(50)',
       notNull: true,
-      references: '"song"',
+      references: '"user"',
       onDelete: 'cascade',
     },
   });
 
-  pgm.createIndex('playlist_song', 'playlist_id');
-  pgm.createIndex('playlist_song', 'song_id');
+  pgm.createIndex('user_album_like', 'user_id');
+  pgm.createIndex('user_album_like', 'album_id');
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable('playlist_song');
+  pgm.dropTable('user_album_like');
 };

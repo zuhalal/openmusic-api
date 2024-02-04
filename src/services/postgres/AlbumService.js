@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const { mapAlbumDBToModel } = require('../../utils');
+const ClientError = require('../../exceptions/ClientError');
 
 class AlbumService {
   constructor() {
@@ -33,7 +34,7 @@ class AlbumService {
     };
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album tidak ditemukan');
     }
 
@@ -45,7 +46,7 @@ class AlbumService {
 
     const finalRes = {
       ...mapAlbumDBToModel(result.rows[0]),
-      songs: allSong.rows.length ? allSong.rows : [],
+      songs: allSong.rowCount ? allSong.rows : [],
     };
 
     return finalRes;
@@ -59,7 +60,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
     }
   }
@@ -72,7 +73,7 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Gagal memperbarui album. Id tidak ditemukan');
     }
   }
@@ -85,8 +86,70 @@ class AlbumService {
 
     const result = await this._pool.query(query);
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
+    }
+  }
+
+  async addAlbumLikeById(idAlbum, { owner }) {
+    await this.getAlbumById(idAlbum);
+
+    await this.checkAlbumLikeById(idAlbum, { owner });
+
+    const id = `user_album-${nanoid(16)}`;
+
+    const query = {
+      text: 'INSERT INTO user_album_like VALUES($1, $2, $3) RETURNING id',
+      values: [id, idAlbum, owner],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal menambahkan like pada album');
+    }
+
+    return result.rows[0].id;
+  }
+
+  async getAlbumLikeCountById(idAlbum) {
+    await this.getAlbumById(idAlbum);
+
+    const query = {
+      text: 'select count(*) as likes from user_album_like where album_id = $1',
+      values: [idAlbum],
+    };
+
+    const result = await this._pool.query(query);
+
+    return {
+      likes: +result.rows[0]?.likes,
+    };
+  }
+
+  async checkAlbumLikeById(idAlbum, { owner }) {
+    const query = {
+      text: 'SELECT * from user_album_like WHERE album_id = $1 AND user_id = $2',
+      values: [idAlbum, owner],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (result.rowCount) {
+      throw new ClientError('Anda telah menyukai album ini');
+    }
+  }
+
+  async deleteAlbumLikeById(id, { owner }) {
+    const query = {
+      text: 'DELETE FROM user_album_like WHERE album_id = $1 AND user_id = $2',
+      values: [id, owner],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Album tidak bisa batal disukai karena belum disukai');
     }
   }
 }
