@@ -3,6 +3,7 @@ class AlbumsHandler {
     this._service = service;
     this._storageService = storageService;
     this._validator = validator;
+
     this.postAlbumHandler = this.postAlbumHandler.bind(this);
     this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
     this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
@@ -59,13 +60,20 @@ class AlbumsHandler {
     };
   }
 
-  async getCountAlbumLikeByIdHandler(request) {
+  async getCountAlbumLikeByIdHandler(request, h) {
     const { id } = request.params;
-    let data = await this._service.getAlbumLikeCountById(id);
-    return {
+    let { data, source } = await this._service.getAlbumLikeCountById(id);
+    
+    const response = h.response({
       status: 'success',
       data,
-    };
+    });
+
+    if (source === 'cache') {
+      response.header('X-Data-Source', source);
+    }
+
+    return response;
   }
 
   async putAlbumByIdHandler(request) {

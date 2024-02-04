@@ -6,8 +6,9 @@ const { mapAlbumDBToModel } = require('../../utils');
 const ClientError = require('../../exceptions/ClientError');
 
 class AlbumService {
-  constructor() {
+  constructor(cacheService) {
     this._pool = new Pool();
+    this._cacheService = cacheService;
   }
 
   async addAlbum({ name, year }) {
@@ -109,22 +110,43 @@ class AlbumService {
       throw new NotFoundError('Gagal menambahkan like pada album');
     }
 
+    await this._cacheService.delete(`album:${id}`);
     return result.rows[0].id;
   }
 
   async getAlbumLikeCountById(idAlbum) {
-    await this.getAlbumById(idAlbum);
+    let source;
+    try {
+      const cacheResult = await this._cacheService.get(`album:${idAlbum}`);
+      const result = JSON.parse(cacheResult)
+      source = 'cache';
+      return {
+        data: result,
+        source,
+      };
+    } catch (error) {
+      await this.getAlbumById(idAlbum);
 
-    const query = {
-      text: 'select count(*) as likes from user_album_like where album_id = $1',
-      values: [idAlbum],
-    };
+      const query = {
+        text: 'select count(*) as likes from user_album_like where album_id = $1',
+        values: [idAlbum],
+      };
+  
+      const result = await this._pool.query(query);
 
-    const result = await this._pool.query(query);
+      const finalRes = {
+        likes: +result.rows[0]?.likes,
+      }
 
-    return {
-      likes: +result.rows[0]?.likes,
-    };
+      source = 'db';
+
+      await this._cacheService.set(`album:${idAlbum}`, JSON.stringify(finalRes));
+      
+      return {
+        data: finalRes,
+        source,
+      };
+    }
   }
 
   async checkAlbumLikeById(idAlbum, { owner }) {
@@ -151,6 +173,8 @@ class AlbumService {
     if (!result.rowCount) {
       throw new NotFoundError('Album tidak bisa batal disukai karena belum disukai');
     }
+
+    await this._cacheService.delete(`album:${id}`);
   }
 }
 
