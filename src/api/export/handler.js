@@ -11,12 +11,13 @@ class ExportsHandler {
     this._validator.validateExportNotesPayload(request.payload);
 
     const message = {
-      userId: request.auth.credentials.id,
       targetEmail: request.payload.targetEmail,
       playlistId: id,
     };
 
-    await this._service.sendMessage('export:playlist', JSON.stringify(message));
+    const owner = request.auth.credentials.id;
+
+    await this._service.sendMessage('export:playlist', JSON.stringify(message), owner);
 
     const response = h.response({
       status: 'success',
