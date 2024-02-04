@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
 
-exports.shorthands = undefined;
-
 exports.up = (pgm) => {
   pgm.createTable('user_album_like', {
     id: {
@@ -29,6 +27,6 @@ exports.up = (pgm) => {
 exports.down = (pgm) => {
   pgm.dropIndex('user_album_like', 'album_id');
   pgm.dropIndex('user_album_like', 'user_id');
-  
+
   pgm.dropTable('user_album_like');
 };

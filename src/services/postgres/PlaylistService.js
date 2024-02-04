@@ -31,7 +31,6 @@ class PlaylistService {
   async addPlaylistToSong({ playlistId, songId, owner }) {
     const id = `playlist_song-${nanoid(16)}`;
 
-    // periksa song nya dulu ada apa engga
     const song = await this._songService.getSongById(songId);
 
     if (!song?.id) {
