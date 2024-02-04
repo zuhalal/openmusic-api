@@ -51,7 +51,7 @@ class AlbumsHandler {
 
   async getAlbumByIdHandler(request) {
     const { id } = request.params;
-    let album = await this._service.getAlbumById(id);
+    const album = await this._service.getAlbumById(id);
     return {
       status: 'success',
       data: {
@@ -62,8 +62,8 @@ class AlbumsHandler {
 
   async getCountAlbumLikeByIdHandler(request, h) {
     const { id } = request.params;
-    let { data, source } = await this._service.getAlbumLikeCountById(id);
-    
+    const { data, source } = await this._service.getAlbumLikeCountById(id);
+
     const response = h.response({
       status: 'success',
       data,
@@ -109,16 +109,16 @@ class AlbumsHandler {
   }
 
   async postUploadImageHandler(request, h) {
-    const { cover } = request.payload;   
+    const { cover } = request.payload;
     const { id } = request.params;
     this._validator.validateImageHeaders(cover.hapi.headers);
 
     const fileLocation = await this._storageService.writeFile(cover, cover.hapi);
 
-    await this._service.editAlbumCoverById(id, { coverUrl: fileLocation })
+    await this._service.editAlbumCoverById(id, { coverUrl: fileLocation });
     const response = h.response({
-      status: "success",
-      message: "Sampul berhasil diunggah"
+      status: 'success',
+      message: 'Sampul berhasil diunggah',
     });
     response.code(201);
     return response;

@@ -118,7 +118,7 @@ class AlbumService {
     let source;
     try {
       const cacheResult = await this._cacheService.get(`album:${idAlbum}`);
-      const result = JSON.parse(cacheResult)
+      const result = JSON.parse(cacheResult);
       source = 'cache';
       return {
         data: result,
@@ -131,17 +131,17 @@ class AlbumService {
         text: 'select count(*) as likes from user_album_like where album_id = $1',
         values: [idAlbum],
       };
-  
+
       const result = await this._pool.query(query);
 
       const finalRes = {
-        likes: +result.rows[0]?.likes,
-      }
+        likes: result.rows[0]?.likes ? +result.rows[0].likes : 0,
+      };
 
       source = 'db';
 
       await this._cacheService.set(`album:${idAlbum}`, JSON.stringify(finalRes));
-      
+
       return {
         data: finalRes,
         source,

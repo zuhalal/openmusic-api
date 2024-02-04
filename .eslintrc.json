@@ -11,6 +11,7 @@
   },
   "rules": {
     "no-console": "off",
-    "no-underscore-dangle":  ["error", { "allow": ["_pool", "_service", "_validator", "_authenticationsService", "_usersService", "_tokenManager", "_songService", "_exports", "_playlistService"] }]
+    "no-underscore-dangle":  ["error", { "allow": ["_pool", "_service", "_validator", "_authenticationsService", "_usersService", "_tokenManager", "_songService", "_exports", "_playlistService", "_storageService", "_data", "_S3", "_cacheService", "_client"] }],
+    "camelcase": ["error", {"allow": ["cover_url"]}]
   }
 }
